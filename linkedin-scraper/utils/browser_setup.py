@@ -37,7 +37,6 @@ def install_chrome():
 
 def setup_browser(use_proxy=False):
     chrome_path = install_chrome()
-
     chrome_options = Options()
     chrome_options.binary_location = chrome_path
 
@@ -57,22 +56,34 @@ def setup_browser(use_proxy=False):
     chrome_options.add_argument(f"user-agent={user_agent}")
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+
+    # 🧩 Essential flags for Render environment
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--disable-software-rasterizer")
     chrome_options.add_argument("--remote-debugging-port=9222")
     chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.add_argument("--start-maximized")
     chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--disable-background-networking")
+    chrome_options.add_argument("--disable-default-apps")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-sync")
+    chrome_options.add_argument("--metrics-recording-only")
+    chrome_options.add_argument("--no-first-run")
+    chrome_options.add_argument("--no-default-browser-check")
+    chrome_options.add_argument("--disable-client-side-phishing-detection")
+    chrome_options.add_argument("--disable-component-update")
+    chrome_options.add_argument("--disable-breakpad")
+    chrome_options.add_argument("--password-store=basic")
+    chrome_options.add_argument("--use-mock-keychain")
 
     # 🧩 Optional proxy
     if use_proxy and os.getenv("PROXY"):
         chrome_options.add_argument(f"--proxy-server={os.getenv('PROXY')}")
 
-    # ✅ Use ChromeDriver pinned to the same version as the installed Chrome
-    # driver_path = ChromeDriverManager(version="129.0.6668.100").install()
-    driver_path = ChromeDriverManager().install()
+    # ✅ Use ChromeDriver pinned to same version
+    driver_path = ChromeDriverManager(driver_version="129.0.6668.100").install()
     if "THIRD_PARTY_NOTICES" in driver_path:
         driver_path = os.path.join(os.path.dirname(driver_path), "chromedriver")
     print(f"✅ Using ChromeDriver binary at: {driver_path}", flush=True)
@@ -99,4 +110,5 @@ def setup_browser(use_proxy=False):
         },
     )
 
+    print("🚀 Chrome browser initialized successfully.", flush=True)
     return driver
