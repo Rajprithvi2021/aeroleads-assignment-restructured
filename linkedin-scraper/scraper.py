@@ -1,7 +1,6 @@
 import time
 import csv
 import random
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -34,18 +33,6 @@ class LinkedInScraper:
             print(f"Login failed: {str(e)}")
             return False
 
-    # def scrape_profile(self, url):
-    #     try:
-    #         print(f"Scraping {url}")
-    #         self.driver.get(url)
-    #         time.sleep(random.uniform(3, 6))
-    #         profile_data = parse_profile(self.driver)
-    #         profile_data['url'] = url
-    #         self.profiles.append(profile_data)
-    #         print(f"Scraped {profile_data.get('name', 'Unknown')}")
-    #     except Exception as e:
-    #         print(f"Error scraping {url}: {str(e)}")
-    #         self.profiles.append({'url': url, 'name': 'Error', 'error': str(e)})
 
     def scrape_profile(self, url, retries=2):
         for attempt in range(1, retries + 1):
