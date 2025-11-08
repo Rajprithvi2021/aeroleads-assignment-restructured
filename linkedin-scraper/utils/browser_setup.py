@@ -7,16 +7,14 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from fake_useragent import UserAgent
 
-
 def setup_browser(use_proxy=False):
     chrome_options = Options()
 
-    # 🧠 Use a random User-Agent
+    # 🧠 Randomize User-Agent
     try:
         ua = UserAgent()
         user_agent = ua.random
     except Exception:
-        # fallback if fake_useragent cache fails
         fallback_agents = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
             "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -30,22 +28,22 @@ def setup_browser(use_proxy=False):
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-software-rasterizer")  # 🧩 Prevent GPU fallback errors
+    chrome_options.add_argument("--remote-debugging-port=9222")   # 🧩 Needed for headless stability
+    chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("--start-maximized")
-    # comment this if you want visible browser window:
-    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--headless=new")  # ✅ Required on Render
 
-    # 🧩 Optional proxy support
+    # 🧩 Optional proxy
     if use_proxy and os.getenv("PROXY"):
         chrome_options.add_argument(f"--proxy-server={os.getenv('PROXY')}")
 
-    # ✅ Get valid ChromeDriver binary only
+    # ✅ Install ChromeDriver dynamically
     driver_path = ChromeDriverManager().install()
     if "THIRD_PARTY_NOTICES" in driver_path:
-        # if webdriver_manager returns a bad file, correct it
         driver_path = os.path.join(os.path.dirname(driver_path), "chromedriver")
-    print(f"✅ Using ChromeDriver binary at: {driver_path}")
+    print(f"✅ Using ChromeDriver binary at: {driver_path}", flush=True)
 
     service = Service(driver_path)
     driver = webdriver.Chrome(service=service, options=chrome_options)
