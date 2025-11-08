@@ -84,8 +84,15 @@ def setup_browser(use_proxy=False):
 
     # ✅ Use ChromeDriver pinned to same version
     driver_path = ChromeDriverManager(driver_version="129.0.6668.100").install()
-    if "THIRD_PARTY_NOTICES" in driver_path:
+
+    # Fix possible misdetected path (sometimes webdriver_manager nests binaries)
+    if driver_path.endswith("THIRD_PARTY_NOTICES"):
         driver_path = os.path.join(os.path.dirname(driver_path), "chromedriver")
+
+    # Look for nested chromedriver folder and fix permissions if needed
+    nested_driver = os.path.join(os.path.dirname(driver_path), "chromedriver-linux64", "chromedriver")
+    if os.path.exists(nested_driver):
+        driver_path = nested_driver
 
     # 🩵 Ensure the driver binary is executable
     try:
