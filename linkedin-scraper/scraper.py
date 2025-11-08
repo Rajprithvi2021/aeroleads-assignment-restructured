@@ -34,18 +34,34 @@ class LinkedInScraper:
             print(f"Login failed: {str(e)}")
             return False
 
-    def scrape_profile(self, url):
-        try:
-            print(f"Scraping {url}")
-            self.driver.get(url)
-            time.sleep(random.uniform(3, 6))
-            profile_data = parse_profile(self.driver)
-            profile_data['url'] = url
-            self.profiles.append(profile_data)
-            print(f"Scraped {profile_data.get('name', 'Unknown')}")
-        except Exception as e:
-            print(f"Error scraping {url}: {str(e)}")
-            self.profiles.append({'url': url, 'name': 'Error', 'error': str(e)})
+    # def scrape_profile(self, url):
+    #     try:
+    #         print(f"Scraping {url}")
+    #         self.driver.get(url)
+    #         time.sleep(random.uniform(3, 6))
+    #         profile_data = parse_profile(self.driver)
+    #         profile_data['url'] = url
+    #         self.profiles.append(profile_data)
+    #         print(f"Scraped {profile_data.get('name', 'Unknown')}")
+    #     except Exception as e:
+    #         print(f"Error scraping {url}: {str(e)}")
+    #         self.profiles.append({'url': url, 'name': 'Error', 'error': str(e)})
+
+    def scrape_profile(self, url, retries=2):
+        for attempt in range(1, retries + 1):
+            try:
+                print(f"Scraping ({attempt}) → {url}")
+                self.driver.get(url)
+                time.sleep(random.uniform(3, 6))
+                profile_data = parse_profile(self.driver)
+                profile_data['url'] = url
+                self.profiles.append(profile_data)
+                print(f"✅ Scraped {profile_data.get('name', 'Unknown')}")
+                return
+            except Exception as e:
+                print(f"⚠️ Attempt {attempt} failed for {url}: {str(e)}")
+                if attempt == retries:
+                    self.profiles.append({'url': url, 'name': 'Error', 'error': str(e)})
 
     def scrape_all(self, urls=None):
         """Scrape either provided URLs or those from config.PROFILE_URLS"""
