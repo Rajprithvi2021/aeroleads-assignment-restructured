@@ -22,7 +22,6 @@ def install_chrome():
     print("⬇️ Installing Google Chrome (headless)...", flush=True)
     os.makedirs(chrome_dir, exist_ok=True)
 
-    # Use a stable Chrome-for-Testing build that matches the pinned driver version
     url = "https://storage.googleapis.com/chrome-for-testing-public/129.0.6668.100/linux64/chrome-linux64.zip"
     zip_path = os.path.join(chrome_dir, "chrome.zip")
 
@@ -33,6 +32,26 @@ def install_chrome():
     os.chmod(chrome_binary, 0o755)
     print(f"✅ Chrome installed at {chrome_binary}", flush=True)
     return chrome_binary
+
+
+def find_valid_chromedriver(base_path: str):
+    """Finds the actual chromedriver binary (not the THIRD_PARTY_NOTICES file)."""
+    # Common possible paths returned by webdriver_manager
+    candidates = [
+        base_path,
+        os.path.join(os.path.dirname(base_path), "chromedriver"),
+        os.path.join(os.path.dirname(base_path), "chromedriver-linux64", "chromedriver"),
+        os.path.join(base_path, "chromedriver"),
+    ]
+    for path in candidates:
+        if os.path.exists(path) and os.access(path, os.X_OK) and "THIRD_PARTY" not in path:
+            return path
+    # fallback: pick first actual file named "chromedriver" recursively
+    for root, _, files in os.walk(os.path.dirname(base_path)):
+        for file in files:
+            if file == "chromedriver":
+                return os.path.join(root, file)
+    raise FileNotFoundError("❌ No valid chromedriver binary found.")
 
 
 def setup_browser(use_proxy=False):
@@ -57,7 +76,7 @@ def setup_browser(use_proxy=False):
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
 
-    # 🧩 Essential flags for Render environment
+    # 🧩 Essential flags for Render
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
@@ -78,23 +97,14 @@ def setup_browser(use_proxy=False):
     chrome_options.add_argument("--password-store=basic")
     chrome_options.add_argument("--use-mock-keychain")
 
-    # 🧩 Optional proxy
     if use_proxy and os.getenv("PROXY"):
         chrome_options.add_argument(f"--proxy-server={os.getenv('PROXY')}")
 
-    # ✅ Use ChromeDriver pinned to same version
-    driver_path = ChromeDriverManager(driver_version="129.0.6668.100").install()
+    # ✅ Install ChromeDriver
+    base_driver_path = ChromeDriverManager(driver_version="129.0.6668.100").install()
+    driver_path = find_valid_chromedriver(base_driver_path)
 
-    # Fix possible misdetected path (sometimes webdriver_manager nests binaries)
-    if driver_path.endswith("THIRD_PARTY_NOTICES"):
-        driver_path = os.path.join(os.path.dirname(driver_path), "chromedriver")
-
-    # Look for nested chromedriver folder and fix permissions if needed
-    nested_driver = os.path.join(os.path.dirname(driver_path), "chromedriver-linux64", "chromedriver")
-    if os.path.exists(nested_driver):
-        driver_path = nested_driver
-
-    # 🩵 Ensure the driver binary is executable
+    # 🩵 Ensure executable permission
     try:
         os.chmod(driver_path, 0o755)
         print(f"✅ ChromeDriver permissions fixed at: {driver_path}", flush=True)
