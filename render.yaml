@@ -1,0 +1,58 @@
+# render.yaml — multi-service deployment blueprint
+
+services:
+  # 1️⃣ Autodialer Backend
+  - type: web
+    name: autodialer-backend
+    env: node
+    rootDir: autodialer-app
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: PORT
+        value: 10000
+
+  # 2️⃣ Autodialer Frontend
+  - type: web
+    name: autodialer-frontend
+    env: static
+    rootDir: autodialer-app/frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+
+  # 3️⃣ Blog Generator Backend
+  - type: web
+    name: blog-generator-backend
+    env: node
+    rootDir: blog-generator
+    buildCommand: npm install
+    startCommand: node server.js
+
+  # 4️⃣ Blog Generator Frontend
+  - type: web
+    name: blog-generator-frontend
+    env: static
+    rootDir: blog-generator/frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+
+  # 5️⃣ LinkedIn Scraper Backend (Python)
+  - type: web
+    name: linkedin-scraper-backend
+    env: python
+    rootDir: linkedin-scraper
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn api:app
+    envVars:
+      - key: PORT
+        value: 10000
+
+  # 6️⃣ LinkedIn Scraper Frontend
+  - type: web
+    name: linkedin-scraper-frontend
+    env: static
+    rootDir: linkedin-scraper/frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
