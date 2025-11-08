@@ -71,7 +71,8 @@ def setup_browser(use_proxy=False):
         chrome_options.add_argument(f"--proxy-server={os.getenv('PROXY')}")
 
     # ✅ Use ChromeDriver pinned to the same version as the installed Chrome
-    driver_path = ChromeDriverManager(version="129.0.6668.100").install()
+    # driver_path = ChromeDriverManager(version="129.0.6668.100").install()
+    driver_path = ChromeDriverManager().install()
     if "THIRD_PARTY_NOTICES" in driver_path:
         driver_path = os.path.join(os.path.dirname(driver_path), "chromedriver")
     print(f"✅ Using ChromeDriver binary at: {driver_path}", flush=True)
