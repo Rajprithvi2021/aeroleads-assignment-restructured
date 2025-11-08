@@ -35,8 +35,7 @@ def install_chrome():
 
 
 def find_valid_chromedriver(base_path: str):
-    """Finds the actual chromedriver binary (not the THIRD_PARTY_NOTICES file)."""
-    # Common possible paths returned by webdriver_manager
+    """Find the real chromedriver binary (skip THIRD_PARTY files)."""
     candidates = [
         base_path,
         os.path.join(os.path.dirname(base_path), "chromedriver"),
@@ -46,11 +45,11 @@ def find_valid_chromedriver(base_path: str):
     for path in candidates:
         if os.path.exists(path) and os.access(path, os.X_OK) and "THIRD_PARTY" not in path:
             return path
-    # fallback: pick first actual file named "chromedriver" recursively
+    # fallback recursive search
     for root, _, files in os.walk(os.path.dirname(base_path)):
-        for file in files:
-            if file == "chromedriver":
-                return os.path.join(root, file)
+        for f in files:
+            if f == "chromedriver":
+                return os.path.join(root, f)
     raise FileNotFoundError("❌ No valid chromedriver binary found.")
 
 
@@ -71,21 +70,19 @@ def setup_browser(use_proxy=False):
             "(KHTML, like Gecko) Chrome/118.0.5993.90 Safari/537.36",
         ]
         user_agent = random.choice(fallback_agents)
-
     chrome_options.add_argument(f"user-agent={user_agent}")
+
+    # Core anti-bot and Render stability flags
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-
-    # 🧩 Essential flags for Render
+    chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--disable-software-rasterizer")
-    chrome_options.add_argument("--remote-debugging-port=9222")
+    chrome_options.add_argument("--disable-features=VizDisplayCompositor")
     chrome_options.add_argument("--window-size=1920,1080")
-    chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--disable-background-networking")
-    chrome_options.add_argument("--disable-default-apps")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--disable-sync")
     chrome_options.add_argument("--metrics-recording-only")
@@ -97,19 +94,19 @@ def setup_browser(use_proxy=False):
     chrome_options.add_argument("--password-store=basic")
     chrome_options.add_argument("--use-mock-keychain")
 
+    # 🧩 Isolated tmp directories (Render fix)
+    chrome_options.add_argument("--user-data-dir=/tmp/chrome-user-data")
+    chrome_options.add_argument("--data-path=/tmp/chrome-data")
+    chrome_options.add_argument("--disk-cache-dir=/tmp/chrome-cache")
+
+    # Optional proxy
     if use_proxy and os.getenv("PROXY"):
         chrome_options.add_argument(f"--proxy-server={os.getenv('PROXY')}")
 
-    # ✅ Install ChromeDriver
+    # ✅ Get working ChromeDriver
     base_driver_path = ChromeDriverManager(driver_version="129.0.6668.100").install()
     driver_path = find_valid_chromedriver(base_driver_path)
-
-    # 🩵 Ensure executable permission
-    try:
-        os.chmod(driver_path, 0o755)
-        print(f"✅ ChromeDriver permissions fixed at: {driver_path}", flush=True)
-    except Exception as e:
-        print(f"⚠️ Warning: could not chmod chromedriver: {e}", flush=True)
+    os.chmod(driver_path, 0o755)
 
     print(f"✅ Using ChromeDriver binary at: {driver_path}", flush=True)
 
@@ -121,16 +118,10 @@ def setup_browser(use_proxy=False):
         "Page.addScriptToEvaluateOnNewDocument",
         {
             "source": """
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => undefined
-                });
+                Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
                 window.chrome = { runtime: {} };
-                Object.defineProperty(navigator, 'languages', {
-                    get: () => ['en-US', 'en']
-                });
-                Object.defineProperty(navigator, 'plugins', {
-                    get: () => [1, 2, 3, 4, 5],
-                });
+                Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+                Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
             """
         },
     )
