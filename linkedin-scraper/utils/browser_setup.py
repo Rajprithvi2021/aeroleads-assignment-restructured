@@ -86,6 +86,14 @@ def setup_browser(use_proxy=False):
     driver_path = ChromeDriverManager(driver_version="129.0.6668.100").install()
     if "THIRD_PARTY_NOTICES" in driver_path:
         driver_path = os.path.join(os.path.dirname(driver_path), "chromedriver")
+
+    # 🩵 Ensure the driver binary is executable
+    try:
+        os.chmod(driver_path, 0o755)
+        print(f"✅ ChromeDriver permissions fixed at: {driver_path}", flush=True)
+    except Exception as e:
+        print(f"⚠️ Warning: could not chmod chromedriver: {e}", flush=True)
+
     print(f"✅ Using ChromeDriver binary at: {driver_path}", flush=True)
 
     service = Service(driver_path)
