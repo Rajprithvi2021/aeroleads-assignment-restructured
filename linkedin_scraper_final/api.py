@@ -1,20 +1,11 @@
+# api.py
 from fastapi import FastAPI
-from pydantic import BaseModel
-import asyncio
-from scraper_playwright import run_scraper
+from scraper_selenium import scrape_profiles
 
-app = FastAPI(title="LinkedIn Scraper API (Playwright)")
+app = FastAPI()
 
-class ScrapeRequest(BaseModel):
-    urls: list[str] = []
-
-@app.post("/scrape")
-async def scrape_profiles(req: ScrapeRequest):
-    urls = req.urls or []
-    if not urls:
-        return {"error": "No URLs provided."}
-    try:
-        results = await run_scraper(urls)
-        return {"count": len(results), "data": results}
-    except Exception as e:
-        return {"error": str(e)}
+@app.get("/scrape")
+def scrape_linkedin_profiles():
+    df = scrape_profiles()
+    result = df.to_dict(orient="records")
+    return {"status": "success", "count": len(result), "data": result}
