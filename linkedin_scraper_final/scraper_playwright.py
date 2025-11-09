@@ -13,7 +13,21 @@ class LinkedInScraper:
 
     async def login_and_scrape(self, urls):
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
+            # ✅ Launch headless Chromium (Render-safe)
+            browser = await p.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                    "--disable-extensions",
+                    "--disable-background-networking",
+                    "--disable-software-rasterizer",
+                    "--single-process",
+                ],
+            )
+
             context = await browser.new_context(
                 user_agent=self.ua.random,
                 viewport={"width": 1920, "height": 1080}
@@ -28,12 +42,12 @@ class LinkedInScraper:
             await page.wait_for_load_state("networkidle")
             print("✅ Logged in successfully!")
 
+            # --- Scrape loop ---
             for i, url in enumerate(urls, 1):
                 try:
                     print(f"[{i}/{len(urls)}] Scraping {url}")
                     await page.goto(url, wait_until="domcontentloaded", timeout=120000)
 
-                    # Wait for the main heading
                     await page.wait_for_selector("h1", timeout=20000)
 
                     name = (await page.locator("h1").text_content()) or "N/A"
@@ -41,26 +55,24 @@ class LinkedInScraper:
                         await page.locator(".text-body-medium, .pv-text-details__left-panel").first.text_content()
                     ) or "N/A"
 
-                    # Broader fallback for About section
-                    about_locator = page.locator(
-                        "section.artdeco-card p, div.display-flex.ph5.pv3 span, div[data-section='summary'] p"
-                    )
-
                     about = "N/A"
                     try:
+                        about_locator = page.locator(
+                            "section.artdeco-card p, div.display-flex.ph5.pv3 span, div[data-section='summary'] p"
+                        )
                         about = (await about_locator.first.text_content(timeout=5000)) or "N/A"
                     except Exception:
-                        pass  # no about section found
+                        pass
 
                     self.profiles.append({
                         "url": url,
                         "name": name.strip(),
                         "headline": headline.strip(),
-                        # "about": about.strip(),
+                        "about": about.strip(),
                     })
 
-                    print(f"✅ Scraped {name.strip()}")
-                    await asyncio.sleep(random.uniform(2, 4))
+                    print(f"✅ Scraped: {name.strip()}")
+                    await asyncio.sleep(random.uniform(2, 5))
 
                 except Exception as e:
                     print(f"⚠️ Error scraping {url}: {e}")

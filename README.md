@@ -1,8 +1,8 @@
-# 🚀 AeroLeads Assignment (Restructured)
+# 🚀 AeroLeads Assignment (Full Stack | AI + Automation)
 
-A comprehensive, 3-module project demonstrating **Web Scraping**, **AI Voice Automation**, and **Content Generation**, built using **FastAPI (Python)**, **Node.js (Express)**, and **Twilio API** — with full **ngrok integration** for webhook testing.
+A comprehensive, 3-module backend project demonstrating **Web Scraping**, **AI Voice Automation**, and **Content Generation**, built using **FastAPI (Python)**, **Node.js (Express)**, and **Twilio + Gemini APIs** — all integrated for real-world automation.
 
-> ✨ This restructured version enhances all functionalities, making the backend professional and frontend impactful.
+> ⚙️ Designed for professional-grade backend demonstration — combining AI, scraping, and telephony automation in one system.
 
 ---
 
@@ -10,56 +10,25 @@ A comprehensive, 3-module project demonstrating **Web Scraping**, **AI Voice Aut
 1. [Overview](#overview)
 2. [Tech Stack](#tech-stack)
 3. [Project Structure](#project-structure)
-4. [Setup Instructions](#setup-instructions)
-5. [Ngrok Setup](#ngrok-setup)
-6. [API Endpoints](#api-endpoints)
-7. [Demo Flow](#demo-flow)
-8. [Author](#author)
+4. [LinkedIn Scraper (FastAPI + Playwright)](#1️⃣-linkedin-scraper-fastapi--playwright)
+5. [AI Autodialer (Node.js + Twilio + Gemini)](#2️⃣-ai-autodialer-nodejs--twilio--gemini)
+6. [AI Blog Generator (Node.js + LLM)](#3️⃣-ai-blog-generator-nodejs--llm)
+7. [Ngrok Setup](#🌐-ngrok-setup)
+8. [Author](#👨‍💻-author)
 
 ---
 
 ## 🧩 Overview
 
-### 1️⃣ LinkedIn Scraper (`linkedin-scraper/`)
-Scrapes public LinkedIn profiles and saves the data into CSV using **FastAPI** + **Selenium**.
+This project showcases **three distinct backend microservices** that solve different automation problems:
 
-#### 🔧 Features:
-- Automates LinkedIn login (test account)
-- Extracts: Name, Headline, Location, About, and Company
-- Supports rotating proxies and browser headers
-- Saves data to CSV
-- API endpoint to trigger scraping and return JSON
+| Module | Description |
+|--------|-------------|
+| **LinkedIn Scraper** | Web scraping engine built with FastAPI + Playwright for extracting profile data. |
+| **AI Autodialer** | Twilio-based calling automation app that uses Gemini AI for conversational messages. |
+| **AI Blog Generator** | Automatic blog creation tool powered by Gemini/OpenAI LLMs. |
 
-📦 **Tech:** Python 3.12, FastAPI, Selenium, ChromeDriver
-
----
-
-### 2️⃣ AI Autodialer (`autodialer-app/`)
-A **Node.js + Twilio + Gemini AI** powered web app that automatically calls users, speaks custom or AI-generated messages, and records responses.
-
-#### 🔧 Features:
-- Upload 100+ phone numbers via UI
-- Initiate single or bulk automated calls
-- Handle DTMF input (“Press 1 to confirm”)
-- AI voice message generation via **Gemini API**
-- Fallback to plain TTS if AI fails
-- Displays call logs and status in real-time
-- Integrates **ngrok** for webhook testing (Twilio callback URLs)
-
-📦 **Tech:** Node.js, Express, Twilio Voice API, Google Gemini API, EJS frontend
-
----
-
-### 3️⃣ AI Blog Generator (`blog/`)
-Automatically generates 10+ articles on given programming topics using AI APIs.
-
-#### 🔧 Features:
-- Enter list of blog titles or topics
-- AI generates full blog content
-- Supports **Gemini**, **ChatGPT**, or **Perplexity**
-- Stores generated content locally
-
-📦 **Tech:** Node.js, LLM API, File System
+All services are modular and can run **independently** or **as a suite**.
 
 ---
 
@@ -67,13 +36,15 @@ Automatically generates 10+ articles on given programming topics using AI APIs.
 
 | Category | Technologies |
 |-----------|--------------|
-| **Backend** | FastAPI, Node.js, Express.js |
-| **Web Scraping** | Selenium, ChromeDriver |
-| **AI / LLMs** | Google Gemini API, OpenAI API |
-| **Telephony** | Twilio Voice API, TwiML, Webhooks |
-| **Frontend** | EJS, HTML, CSS, JS |
-| **Database (Optional)** | SQLite / In-memory |
-| **Dev Tools** | ngrok, nodemon, pip, npm |
+| **Languages** | Python 3.12, JavaScript (Node.js v18+) |
+| **Frameworks** | FastAPI, Express.js |
+| **Automation Tools** | Playwright (Chromium) |
+| **AI / LLM APIs** | Google Gemini, OpenAI |
+| **Telephony** | Twilio Voice API, Webhooks |
+| **Databases (optional)** | SQLite / In-memory |
+| **Frontend** | EJS, HTML, CSS, JavaScript |
+| **Deployment** | Render / Ngrok |
+| **Tools** | Gunicorn, Uvicorn, Nodemon |
 
 ---
 
@@ -84,10 +55,10 @@ aeroleads-assignment-restructured/
 │
 ├── linkedin-scraper/
 │   ├── api.py
-│   ├── scraper.py
-│   ├── utils/
+│   ├── scraper_playwright.py
 │   ├── config.py
 │   ├── requirements.txt
+│   └── profiles.csv
 │
 ├── autodialer-app/
 │   ├── config/
@@ -105,39 +76,51 @@ aeroleads-assignment-restructured/
 │   ├── views/
 │   ├── public/
 │
-├── .gitignore
 └── README.md
 ```
 
 ---
 
-## 🧩 Setup Instructions
+## 1️⃣ LinkedIn Scraper (FastAPI + Playwright)
 
-### 🔹 Common Prerequisites
-- **Python 3.12+**
-- **Node.js v18+**
-- **Google Chrome + ChromeDriver**
-- **ngrok** (for webhook testing)
-- **Twilio Account** (for calling)
-- **Gemini / OpenAI API Key**
+A **Python 3.12** microservice that automates LinkedIn login, scrapes public profile data, and serves the results through a FastAPI endpoint.  
+It’s **Render-deployable** and runs fully headless via **Playwright (Chromium)**.
+
+### 🔧 Features:
+- Automates login (test LinkedIn account)
+- Extracts **Name**, **Headline**, **Location**, and **About**
+- Saves to CSV (`profiles.csv`)
+- Exposes `/scrape` API endpoint
+- Deployed on Render using Gunicorn + Uvicorn
 
 ---
 
-### 🔹 1. LinkedIn Scraper (Python + FastAPI)
+### 🧩 Setup
 
+#### 1. Environment Setup
 ```bash
 cd linkedin-scraper
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+playwright install-deps
+playwright install chromium
+```
+
+#### 2. .env
+```env
+LINKEDIN_EMAIL=your_test_email
+LINKEDIN_PASSWORD=your_test_password
+```
+
+#### 3. Run Locally
+```bash
 uvicorn api:app --reload --port 8001
 ```
 
-Visit: 👉 `http://127.0.0.1:8001/docs`
-
-#### Example API Request:
-```bash
-POST /scrape
+#### 4. API Example
+POST → /scrape
+```json
 {
   "urls": [
     "https://www.linkedin.com/in/satyanadella",
@@ -146,50 +129,161 @@ POST /scrape
 }
 ```
 
-Output:
+**Response:**
 ```json
-[
-  {"url": "https://linkedin.com/in/satyanadella", "name": "Satya Nadella", "headline": "CEO Microsoft", "location": "USA"}
-]
+{
+  "count": 2,
+  "data": [
+    {
+      "url": "https://linkedin.com/in/satyanadella",
+      "name": "Satya Nadella",
+      "headline": "Chairman & CEO at Microsoft",
+      "about": "Leading Microsoft’s transformation..."
+    }
+  ]
+}
 ```
+
+**Output File:** profiles.csv
 
 ---
 
-### 🔹 2. Autodialer App (Node.js + Twilio + Gemini)
+### 🚀 Deploy on Render
+
+**Build Command:**
+```bash
+pip install -r requirements.txt && playwright install-deps && playwright install chromium
+```
+
+**Start Command:**
+```bash
+gunicorn -k uvicorn.workers.UvicornWorker api:app
+```
+
+**Environment Variables:**
+```bash
+LINKEDIN_EMAIL=your_test_email
+LINKEDIN_PASSWORD=your_test_password
+PYTHON_VERSION=3.12.0
+```
+
+Then open → https://<your-app>.onrender.com/docs
+
+---
+
+## 2️⃣ AI Autodialer (Node.js + Twilio + Gemini)
+
+A **voice automation system** that calls users, delivers AI-generated or pre-defined messages, and captures keypad (DTMF) responses.
+
+### 🔧 Features
+- Bulk or single calls using Twilio
+- AI message generation with Gemini API
+- Custom text-to-speech fallback
+- Logs call details and responses
+- Webhook handling via ngrok
+- Real-time UI built with EJS
+
+---
+
+### 🧩 Setup
 
 ```bash
 cd autodialer-app
 npm install
-npm run dev   # or: node server.js
+npm run dev
 ```
 
-#### `.env` Example
+#### .env Example
 ```env
 PORT=3000
 APP_URL=http://localhost:3000
-BASE_URL=https://<your-ngrok-url>.ngrok.io
+BASE_URL=https://<your-ngrok-id>.ngrok.io
 
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxx
-TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_AUTH_TOKEN=your_twilio_token
 TWILIO_PHONE_NUMBER=+1415XXXXXXX
 
 GEMINI_API_KEY=your_google_gemini_key
 ```
 
+#### Run ngrok
+```bash
+ngrok http 3000
+```
+
+Copy the forwarding URL into .env → BASE_URL
+
 ---
 
-### 🔹 3. Blog Generator (Node.js)
+### 📡 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|-----------|-------------|
+| POST | /api/dialer/upload | Upload phone list |
+| POST | /api/dialer/call | Start bulk calls |
+| POST | /api/dialer/call-single | Make one call |
+| GET | /api/dialer/logs | Retrieve call logs |
+| POST | /api/dialer/webhook | Twilio status callback |
+| ALL | /api/dialer/twiml | AI or TTS call response |
+| POST | /api/dialer/dtmf | Handle “Press 1” input |
+
+---
+
+### 🧪 Demo Flow
+
+1. Start ngrok  
+   ```bash
+   ngrok http 3000
+   ```
+2. Run server  
+   ```bash
+   npm run dev
+   ```
+3. Open the UI → upload phone list → “Start Calling”
+4. Twilio initiates voice calls
+5. Caller presses digits → webhook logs it
+6. Logs visible on dashboard
+
+---
+
+## 3️⃣ AI Blog Generator (Node.js + LLM)
+
+A content generator that creates professional blog articles on developer topics using **Gemini / ChatGPT / Perplexity APIs**.
+
+### 🔧 Features
+- Input list of blog topics
+- Fetch AI-generated full-length blogs
+- Save as .md or .txt
+- Supports any LLM backend
+- Fast and lightweight
+
+---
+
+### 🧩 Setup
+
 ```bash
 cd blog
 npm install
 node generator.js
 ```
 
+#### Example
+```bash
+Enter topics: Golang vs Python, FastAPI Tips
+```
+
+**Output:**
+```
+/blogs/
+ ├── golang-vs-python.md
+ ├── fastapi-tips.md
+```
+
 ---
 
 ## 🌐 Ngrok Setup
 
-To make your local server public for **Twilio callbacks**, run:
+For webhook testing (Twilio callbacks):
 ```bash
 ngrok http 3000
 ```
@@ -199,66 +293,9 @@ You’ll get:
 Forwarding https://abc123.ngrok.io -> http://localhost:3000
 ```
 
-Now copy that URL into your `.env`:
+Update .env:
 ```env
 BASE_URL=https://abc123.ngrok.io
-```
-
-Twilio will send events to:
-```
-https://abc123.ngrok.io/api/dialer/webhook
-```
-
----
-
-## 📡 API Endpoints (Autodialer)
-
-| Method | Endpoint | Description |
-|--------|-----------|-------------|
-| `POST` | `/api/dialer/upload` | Upload multiple phone numbers |
-| `POST` | `/api/dialer/call` | Start calling uploaded numbers |
-| `POST` | `/api/dialer/call-single` | Make a single call |
-| `GET` | `/api/dialer/logs` | Get all call logs |
-| `POST` | `/api/dialer/webhook` | Twilio call status callback |
-| `ALL` | `/api/dialer/twiml` | TwiML response for AI or normal TTS |
-| `POST` | `/api/dialer/dtmf` | Handle DTMF input (Press 1 to confirm) |
-
----
-
-## 🧪 Demo Flow
-
-1. **Start ngrok**:  
-   ```bash
-   ngrok http 3000
-   ```
-2. **Run Autodialer**:  
-   ```bash
-   npm run dev
-   ```
-3. **Upload phone numbers** via the frontend UI
-4. **Click “Start Calling”**
-5. **Twilio initiates calls**
-6. **Press 1** on call to confirm  
-7. Logs appear in UI → shows call status (`initiated`, `ringing`, `completed`)
-
----
-
-## 📊 Sample Output
-
-```json
-{
-  "success": true,
-  "message": "Calls initiated successfully",
-  "logs": [
-    {
-      "sid": "CAxxxxxx",
-      "to": "+9198xxxxxxx",
-      "status": "completed",
-      "ai": true,
-      "time": "2025-11-07T10:33:41Z"
-    }
-  ]
-}
 ```
 
 ---
@@ -268,23 +305,16 @@ https://abc123.ngrok.io/api/dialer/webhook
 **Prithvi Raj**  
 Backend Developer | FastAPI | Node.js | Golang | AI Integrations  
 
-📧 [Connect on LinkedIn](https://www.linkedin.com/in/prithvi-raj/)  
-💻 GitHub: [Rajprithvi2021](https://github.com/Rajprithvi2021)
+🔗 [LinkedIn](https://www.linkedin.com/in/prithvi-raj/)  
+💻 [GitHub](https://github.com/Rajprithvi2021)
 
 ---
 
 ## 🏁 Summary
 
-✅ Fully functional assignment combining:
-- LinkedIn Scraper (Python + FastAPI)  
-- AI Autodialer (Node.js + Twilio + Gemini)  
-- AI Blog Generator  
+✅ **LinkedIn Scraper** — FastAPI + Playwright + Render-ready  
+✅ **AI Autodialer** — Node.js + Twilio + Gemini  
+✅ **Blog Generator** — AI-driven article creation  
+✅ **Integrated via modular, production-grade codebase**
 
-✅ Integrated with:
-- **Twilio Voice API**
-- **Google Gemini AI**
-- **ngrok for webhook tunneling**
-
-> 💡 “This project shows real-world backend problem solving: AI + automation + integrations — all in one.”
-
----
+> 💡 “Three practical automations — demonstrating AI integration, browser automation, and telephony at scale.”
